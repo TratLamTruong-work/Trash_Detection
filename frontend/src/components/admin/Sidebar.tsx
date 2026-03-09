@@ -1,5 +1,4 @@
 // src/components/admin/Sidebar.tsx
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 type Tab = "users" | "points" | "rewards";
