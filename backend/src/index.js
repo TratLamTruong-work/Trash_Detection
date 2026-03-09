@@ -16,12 +16,15 @@ import groupMemberRoute from "./routes/groupMemberRoute.js";
 import customTradeHistoryRoute from "./routes/customTradeHistoryRoute.js";
 import tradeHistoryRoute from "./routes/tradeHistoryRoute.js";
 import { connectDB } from "./lib/connectDB.js";
+import { swaggerUi, swaggerSpec } from "./swagger.js";
+
 
 dotenv.config();
 
 const port = process.env.PORT || 5000;
 const app = express();
 const __dirname = path.resolve();
+
 
 app.use(
   cors({
@@ -52,7 +55,8 @@ app.use("/api/default-items", defaultItemRoute);
 app.use("/api/groups", groupRoute);
 app.use("/api/group-members", groupMemberRoute);
 app.use("/api/custom-trade-history", customTradeHistoryRoute);
-app.use("/api/trade-history", tradeHistoryRoute);
+app.use("/api/trade-histories", tradeHistoryRoute);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get("/api/health", (req, res) => {
   res.json({ success: true, message: "Server đang chạy tốt!" });

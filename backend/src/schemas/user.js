@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import UserRole from "../enum/userRole.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -11,6 +12,12 @@ const userSchema = new mongoose.Schema(
     male: { type: Boolean, required: true },
     points: { type: Number, required: true, default: 0 },
     iconUrl: { type: String, required: true },
+    role: {
+      type: String,
+      enum: [UserRole.ADMIN, UserRole.USER],
+      default: UserRole.USER,
+      required: true,
+    },
   },
   { timestamps: true }
 );

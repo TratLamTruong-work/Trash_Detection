@@ -1,14 +1,12 @@
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 
-import UserRole from "../enum/userRole.js";
-
 dotenv.config();
 
-export const generateToken = (userId) => {
+export const generateToken = (userId, role) => {
   const payload = {
     id: userId,
-    role: UserRole.MANAGER.id,
+    role: role,
   };
 
   const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {

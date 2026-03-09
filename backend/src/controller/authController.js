@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 
 import User from "../schemas/user.js";
+import UserRole from "../enum/userRole.js";
 import { generateToken } from "../services/tokenService.js";
 
 dotenv.config();
@@ -36,7 +37,8 @@ export const signUp = async (req, res) => {
       });
     }
 
-    const hashedPassword = bcrypt.hashSync(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
+
 
     const newUser = new User({
       userName,
@@ -45,14 +47,14 @@ export const signUp = async (req, res) => {
       lastName,
       email,
       birthDate: new Date(birthDate),
-      male: male === true || male === "true",
+      male: Boolean(male),
       points: 0,
       iconUrl: DEFAULT_ICON_URL,
     });
 
     await newUser.save();
 
-    const { accessToken, refreshToken } = generateToken(newUser._id);
+    const { accessToken, refreshToken } = generateToken(newUser._id, newUser.role);
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -76,6 +78,7 @@ export const signUp = async (req, res) => {
           male: newUser.male,
           points: newUser.points,
           iconUrl: newUser.iconUrl,
+          role: newUser.role,
         },
       },
     });
@@ -118,7 +121,7 @@ export const signIn = async (req, res) => {
       });
     }
 
-    const { accessToken, refreshToken } = generateToken(user._id);
+    const { accessToken, refreshToken } = generateToken(user._id, user.role);
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -142,6 +145,7 @@ export const signIn = async (req, res) => {
           male: user.male,
           points: user.points,
           iconUrl: user.iconUrl,
+          role: user.role,
         },
       },
     });
@@ -169,7 +173,7 @@ export const refreshToken = (req, res) => {
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
     const newAccessToken = jwt.sign(
-      { id: decoded.id },
+      { id: decoded.id, role: decoded.role },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
