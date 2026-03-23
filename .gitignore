@@ -1,2 +1,5 @@
 *.md
 *.txt
+
+backend_ver2/node_modules/
+backend_ver2/.env
