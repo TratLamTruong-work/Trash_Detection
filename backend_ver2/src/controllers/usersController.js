@@ -1,6 +1,10 @@
 import User from "../models/userModel.js";
 
 import { updateField } from "../lib/usersHelpers.js";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../middleware/fileUpload.js";
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -68,6 +72,22 @@ export const updateUserInfo = async (req, res) => {
       user.point = totalPoint;
     }
 
+    // 5. Handle file upload if a new image is provided
+    if (req.files && req.files.image) {
+      const imageFile = req.files.image;
+
+      // 5.1. Delete old image from Cloudinary if it exists
+      if (item.imagePublicId) {
+        await deleteFromCloudinary(item.imagePublicId);
+      }
+
+      // 5.2. Upload new image
+      const { imageUrl, imagePublicId } = await uploadToCloudinary(imageFile);
+
+      item.iconUrl = imageUrl;
+      item.iconPublicId = imagePublicId;
+    }
+
     await user.save();
 
     res.status(200).json({
@@ -98,7 +118,11 @@ export const deleteUser = async (req, res) => {
     }
 
     // 2. Delete the user
-    await user.deleteOne();
+    await user.deleteOne({ _id: id });
+
+    if (user.iconPublicId) {
+      await deleteFromCloudinary(user.iconPublicId);
+    }
 
     res.status(200).json({
       state: 1,

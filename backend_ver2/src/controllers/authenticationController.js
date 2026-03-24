@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 
 import User from "../models/userModel.js";
 import { generateToken } from "../lib/generateToken.js";
+import { uploadToCloudinary } from "../middleware/fileUpload.js";
 
 dotenv.config();
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
@@ -25,6 +26,13 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({
         state: 0,
         message: "userName, email and password are required",
+      });
+    }
+
+    if (!req.files || !req.files.image) {
+      return res.status(400).json({
+        state: 0,
+        message: "Icon file is required",
       });
     }
 
@@ -64,6 +72,13 @@ export const registerUser = async (req, res) => {
       active: true,
       point: 0,
     });
+
+    // 6. Handle file upload
+    const imageFile = req.files.image;
+    const { imageUrl, imagePublicId } = await uploadToCloudinary(imageFile);
+
+    newUser.iconUrl = imageUrl;
+    newUser.iconPublicId = imagePublicId;
 
     await newUser.save();
 
