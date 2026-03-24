@@ -77,15 +77,15 @@ export const updateUserInfo = async (req, res) => {
       const imageFile = req.files.image;
 
       // 5.1. Delete old image from Cloudinary if it exists
-      if (item.imagePublicId) {
-        await deleteFromCloudinary(item.imagePublicId);
+      if (user.iconPublicId) {
+        await deleteFromCloudinary(user.iconPublicId);
       }
 
       // 5.2. Upload new image
       const { imageUrl, imagePublicId } = await uploadToCloudinary(imageFile);
 
-      item.iconUrl = imageUrl;
-      item.iconPublicId = imagePublicId;
+      user.iconUrl = imageUrl;
+      user.iconPublicId = imagePublicId;
     }
 
     await user.save();
