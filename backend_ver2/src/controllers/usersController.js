@@ -1,6 +1,10 @@
 import User from "../models/userModel.js";
 
 import { updateField } from "../lib/usersHelpers.js";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../middleware/fileUpload.js";
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -31,6 +35,57 @@ export const getAllUsers = async (req, res) => {
       state: 0,
       error: error.message,
       message: "Get all users failed",
+    });
+  }
+};
+
+export const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Validate input
+    if (!id) {
+      return res.status(400).json({
+        state: 0,
+        message: "User ID is required",
+      });
+    }
+
+    // 2. Find user by ID (loại bỏ password)
+    const user = await User.findById(id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        state: 0,
+        message: "User not found",
+      });
+    }
+
+    // 3. Format response
+    const formattedUser = {
+      _id: user._id,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      birthday: user.birthday,
+      male: user.male,
+      iconUrl: user.iconUrl,
+      point: user.point,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+
+    res.status(200).json({
+      state: 1,
+      data: formattedUser,
+      message: "Get user successful",
+    });
+  } catch (error) {
+    res.status(500).json({
+      state: 0,
+      error: error.message,
+      message: "Get user failed",
     });
   }
 };
@@ -68,6 +123,22 @@ export const updateUserInfo = async (req, res) => {
       user.point = totalPoint;
     }
 
+    // 5. Handle file upload if a new image is provided
+    if (req.files && req.files.image) {
+      const imageFile = req.files.image;
+
+      // 5.1. Delete old image from Cloudinary if it exists
+      if (user.iconPublicId) {
+        await deleteFromCloudinary(user.iconPublicId);
+      }
+
+      // 5.2. Upload new image
+      const { imageUrl, imagePublicId } = await uploadToCloudinary(imageFile);
+
+      user.iconUrl = imageUrl;
+      user.iconPublicId = imagePublicId;
+    }
+
     await user.save();
 
     res.status(200).json({
@@ -98,7 +169,11 @@ export const deleteUser = async (req, res) => {
     }
 
     // 2. Delete the user
-    await user.deleteOne();
+    await user.deleteOne({ _id: id });
+
+    if (user.iconPublicId) {
+      await deleteFromCloudinary(user.iconPublicId);
+    }
 
     res.status(200).json({
       state: 1,

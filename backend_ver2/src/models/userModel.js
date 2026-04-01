@@ -46,6 +46,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    iconPublicId: {
+      type: String,
+    },
   },
   {
     timestamps: true,
