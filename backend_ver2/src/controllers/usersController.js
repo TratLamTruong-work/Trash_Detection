@@ -39,6 +39,57 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+export const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Validate input
+    if (!id) {
+      return res.status(400).json({
+        state: 0,
+        message: "User ID is required",
+      });
+    }
+
+    // 2. Find user by ID (loại bỏ password)
+    const user = await User.findById(id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        state: 0,
+        message: "User not found",
+      });
+    }
+
+    // 3. Format response
+    const formattedUser = {
+      _id: user._id,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      birthday: user.birthday,
+      male: user.male,
+      iconUrl: user.iconUrl,
+      point: user.point,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+
+    res.status(200).json({
+      state: 1,
+      data: formattedUser,
+      message: "Get user successful",
+    });
+  } catch (error) {
+    res.status(500).json({
+      state: 0,
+      error: error.message,
+      message: "Get user failed",
+    });
+  }
+};
+
 export const updateUserInfo = async (req, res) => {
   try {
     // 1. Get user ID from request parameters

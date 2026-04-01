@@ -7,6 +7,7 @@ import { connectDB } from "./lib/db.js";
 import authenticationRoute from "./routes/authenticationRoute.js";
 import usersRoute from "./routes/usersRoute.js";
 import itemsRoute from "./routes/itemsRoute.js";
+import tradeHistoryRoute from "./routes/tradeHistoryRoute.js";
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use(
 app.use("/api/auth", authenticationRoute);
 app.use("/api/users", usersRoute);
 app.use("/api/items", itemsRoute);
+app.use("/api/trade_history", tradeHistoryRoute);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
