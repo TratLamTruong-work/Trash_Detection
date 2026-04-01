@@ -7,7 +7,6 @@ import {
   updateUserInfo,
   deleteUser,
 } from "../controllers/usersController.js";
-import { get } from "mongoose";
 
 const router = Router();
 
