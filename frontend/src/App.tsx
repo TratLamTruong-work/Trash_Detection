@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import LoginPage from './pages/LoginPage';
 import DefaultItemsPage from './pages/admin/DefaultItemsPage';
-import CustomItemsPage from './pages/admin/CustomItemsPage';
+import DashboardPage from './pages/admin/DashboardPage';
 import TradeHistoryPage from './pages/admin/TradeHistoryPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
 import AdminLayout from './layouts/AdminLayout';
@@ -25,9 +25,9 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="/admin/default-items" replace />} />
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardPage />} />
           <Route path="default-items" element={<DefaultItemsPage />} />
-          <Route path="custom-items" element={<CustomItemsPage />} />
           <Route path="trade-history" element={<TradeHistoryPage />} />
           <Route path="users" element={<UserManagementPage />} />
         </Route>

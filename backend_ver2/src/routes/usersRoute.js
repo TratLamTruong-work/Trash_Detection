@@ -6,11 +6,13 @@ import {
   getUserById,
   updateUserInfo,
   deleteUser,
+  createUser,
 } from "../controllers/usersController.js";
 
 const router = Router();
 
 // APIs
+router.post("/", verifyToken, verifyAdmin, createUser);
 router.get("/", verifyToken, verifyAdmin, getAllUsers);
 router.get("/:id", verifyToken, getUserById);
 router.put("/:id", verifyToken, updateUserInfo);

@@ -36,6 +36,54 @@ export const getAllItems = async (req, res) => {
   }
 };
 
+export const getItemById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Validate input
+    if (!id) {
+      return res.status(400).json({
+        state: 0,
+        message: "Item ID is required",
+      });
+    }
+
+    // 2. Find item by ID
+    const item = await DefaultItem.findById(id);
+
+    if (!item) {
+      return res.status(404).json({
+        state: 0,
+        message: "Item not found",
+      });
+    }
+
+    // 3. Format response
+    const formattedItem = {
+      _id: item._id,
+      name: item.name,
+      description: item.description,
+      active: item.active,
+      pointToTrade: item.pointToTrade,
+      imageUrl: item.imageUrl,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    };
+
+    res.status(200).json({
+      state: 1,
+      data: formattedItem,
+      message: "Get item successful",
+    });
+  } catch (error) {
+    res.status(500).json({
+      state: 0,
+      error: error.message,
+      message: "Get item failed",
+    });
+  }
+};
+
 export const createItem = async (req, res) => {
   try {
     const { name, description, pointToTrade } = req.body;

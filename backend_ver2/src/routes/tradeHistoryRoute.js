@@ -13,7 +13,7 @@ const router = Router();
 // APIs
 router.post("/", verifyToken, verifyAdmin, createTradeHistory);
 router.get("/", verifyToken, verifyAdmin, getAllTradeHistories);
-router.delete("/:id", verifyToken, verifyAdmin, deleteTradeHistory);
 router.delete("/", verifyToken, verifyAdmin, deleteAllTradeHistories);
+router.delete("/:id", verifyToken, verifyAdmin, deleteTradeHistory);
 
 export default router;
