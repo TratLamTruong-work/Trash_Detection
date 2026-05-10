@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
 
 import { updateField } from "../lib/usersHelpers.js";
@@ -16,10 +17,12 @@ export const getAllUsers = async (req, res) => {
       firstName: user.firstname,
       lastName: user.lastname,
       email: user.email,
-      birthDate: user.birthday,
+      birthDate: user.birthday
+        ? user.birthday.toISOString().split('T')[0]
+        : '',
       male: user.male,
-      active: user.active,
-      totalPoint: user.point,
+      points: user.point,
+      role: user.role || (user.username === process.env.ADMIN_USERNAME ? 'ADMIN' : 'USER'),
       iconUrl: user.iconUrl,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -64,14 +67,17 @@ export const getUserById = async (req, res) => {
     // 3. Format response
     const formattedUser = {
       _id: user._id,
-      username: user.username,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      userName: user.username,
+      firstName: user.firstname,
+      lastName: user.lastname,
       email: user.email,
-      birthday: user.birthday,
+      birthDate: user.birthday
+        ? user.birthday.toISOString().split('T')[0]
+        : '',
       male: user.male,
+      points: user.point,
+      role: user.role || (user.username === process.env.ADMIN_USERNAME ? 'ADMIN' : 'USER'),
       iconUrl: user.iconUrl,
-      point: user.point,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -107,20 +113,27 @@ export const updateUserInfo = async (req, res) => {
     }
 
     // 4. Update user fields if provided in the request body
-    const { firstName, lastName, email, birthDate, male, totalPoint } =
+    const { firstName, lastName, email, birthDate, male, point, role } =
       req.body;
 
     user.firstname = updateField(firstName, user.firstname);
     user.lastname = updateField(lastName, user.lastname);
     user.email = updateField(email, user.email);
-    user.birthday = updateField(birthDate, user.birthday);
 
-    // With boolean, we need to check if the value is explicitly provided (not undefined)
-    if (male !== undefined) user.male = male;
+    if (birthDate !== undefined && birthDate !== '') {
+      user.birthday = new Date(birthDate);
+    }
 
-    // With number, we also need to check if the value is explicitly provided (not undefined)
-    if (totalPoint !== undefined && totalPoint !== null) {
-      user.point = totalPoint;
+    if (male !== undefined) {
+      user.male = typeof male === 'string' ? male === 'true' : male;
+    }
+
+    if (point !== undefined && point !== null) {
+      user.point = Number(point);
+    }
+
+    if (role !== undefined && ['ADMIN', 'USER'].includes(role)) {
+      user.role = role;
     }
 
     // 5. Handle file upload if a new image is provided
@@ -150,6 +163,105 @@ export const updateUserInfo = async (req, res) => {
       state: 0,
       error: error.message,
       message: "Update user failed",
+    });
+  }
+};
+
+export const createUser = async (req, res) => {
+  try {
+    const {
+      userName,
+      password,
+      firstName,
+      lastName,
+      email,
+      birthDate,
+      male,
+      point,
+      role,
+    } = req.body;
+
+    if (!userName || !email || !password) {
+      return res.status(400).json({
+        state: 0,
+        message: "userName, email and password are required",
+      });
+    }
+
+    const existingUserName = await User.findOne({ username: userName });
+    if (existingUserName) {
+      return res.status(400).json({
+        state: 0,
+        message: "Username already exists",
+      });
+    }
+
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({
+        state: 0,
+        message: "Email already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const imageFile = req.files?.image;
+    let imageUrl = "";
+    let imagePublicId;
+
+    if (imageFile) {
+      const uploadResult = await uploadToCloudinary(imageFile);
+      imageUrl = uploadResult.imageUrl;
+      imagePublicId = uploadResult.imagePublicId;
+    }
+
+    const parsedPoint = point !== undefined ? parseInt(point, 10) : 0;
+    const parsedMale = typeof male === 'string' ? male === 'true' : male;
+    const finalRole = ['ADMIN', 'USER'].includes(role) ? role : 'USER';
+
+    const newUser = await User.create({
+      username: userName,
+      password: hashedPassword,
+      firstname: firstName,
+      lastname: lastName,
+      email,
+      birthday: birthDate ? new Date(birthDate) : undefined,
+      male: parsedMale ?? true,
+      iconUrl: imageUrl,
+      iconPublicId: imagePublicId,
+      active: true,
+      point: Number.isNaN(parsedPoint) ? 0 : parsedPoint,
+      role: finalRole,
+    });
+
+    const formattedUser = {
+      _id: newUser._id,
+      userName: newUser.username,
+      firstName: newUser.firstname,
+      lastName: newUser.lastname,
+      email: newUser.email,
+      birthDate: newUser.birthday
+        ? newUser.birthday.toISOString().split('T')[0]
+        : '',
+      male: newUser.male,
+      points: newUser.point,
+      role: newUser.role,
+      iconUrl: newUser.iconUrl || '',
+      createdAt: newUser.createdAt,
+      updatedAt: newUser.updatedAt,
+    };
+
+    res.status(201).json({
+      state: 1,
+      data: formattedUser,
+      message: "User created successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      state: 0,
+      error: error.message,
+      message: "Create user failed",
     });
   }
 };

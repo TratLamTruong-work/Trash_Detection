@@ -18,7 +18,7 @@ export const registerUser = async (req, res) => {
       email,
       birthDate,
       male,
-      iconUrl,
+      point,
     } = req.body;
 
     // 1. Validate
@@ -26,13 +26,6 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({
         state: 0,
         message: "userName, email and password are required",
-      });
-    }
-
-    if (!req.files || !req.files.image) {
-      return res.status(400).json({
-        state: 0,
-        message: "Icon file is required",
       });
     }
 
@@ -59,7 +52,21 @@ export const registerUser = async (req, res) => {
     // 4. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 5. Create user
+    // 5. Handle file upload first when provided
+    const imageFile = req.files?.image;
+    let imageUrl = "";
+    let imagePublicId;
+
+    if (imageFile) {
+      const uploadResult = await uploadToCloudinary(imageFile);
+      imageUrl = uploadResult.imageUrl;
+      imagePublicId = uploadResult.imagePublicId;
+    }
+
+    // 6. Create user with uploaded image URL if available
+    const parsedPoint = point !== undefined ? parseInt(point, 10) : 0;
+    const parsedMale = typeof male === 'string' ? male === 'true' : male;
+
     const newUser = await User.create({
       username: userName,
       password: hashedPassword,
@@ -67,23 +74,37 @@ export const registerUser = async (req, res) => {
       lastname: lastName,
       email,
       birthday: birthDate ? new Date(birthDate) : undefined,
-      male: male ?? true,
-      iconUrl,
+      male: parsedMale ?? true,
+      iconUrl: imageUrl,
+      iconPublicId: imagePublicId,
       active: true,
-      point: 0,
+      point: Number.isNaN(parsedPoint) ? 0 : parsedPoint,
     });
 
-    // 6. Handle file upload
-    const imageFile = req.files.image;
-    const { imageUrl, imagePublicId } = await uploadToCloudinary(imageFile);
+    // 7. Generate token
+    const token = generateToken(newUser._id, "user");
 
-    newUser.iconUrl = imageUrl;
-    newUser.iconPublicId = imagePublicId;
-
-    await newUser.save();
+    // 8. Format user data
+    const userData = {
+      id: newUser._id,
+      _id: newUser._id,
+      userName: newUser.username,
+      firstName: newUser.firstname,
+      lastName: newUser.lastname,
+      email: newUser.email,
+      birthDate: newUser.birthday ? newUser.birthday.toISOString().split('T')[0] : "",
+      male: newUser.male,
+      points: newUser.point,
+      iconUrl: newUser.iconUrl || "",
+      role: "USER",
+    };
 
     res.status(201).json({
       state: 1,
+      data: {
+        accessToken: token,
+        user: userData,
+      },
       message: "User registered successfully",
     });
   } catch (error) {
@@ -115,13 +136,37 @@ export const loginUser = async (req, res) => {
 
     // 3. Generate and return a JWT token
     let token;
+    let role = "USER";
     if (username === ADMIN_USERNAME) {
       token = generateToken(user._id, "admin");
+      role = "ADMIN";
     } else {
       token = generateToken(user._id, "user");
     }
 
-    res.status(200).json({ state: 1, token });
+    // 4. Format user data
+    const userData = {
+      id: user._id,
+      _id: user._id,
+      userName: user.username,
+      firstName: user.firstname,
+      lastName: user.lastname,
+      email: user.email,
+      birthDate: user.birthday ? user.birthday.toISOString().split('T')[0] : "",
+      male: user.male,
+      points: user.point,
+      iconUrl: user.iconUrl || "",
+      role: role,
+    };
+
+    res.status(200).json({
+      state: 1,
+      data: {
+        accessToken: token,
+        user: userData,
+      },
+      message: "Login successful",
+    });
   } catch (error) {
     res
       .status(500)

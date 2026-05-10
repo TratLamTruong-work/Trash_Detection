@@ -26,7 +26,6 @@ const userSchema = new mongoose.Schema(
     },
     birthday: {
       type: Date,
-      required: true,
     },
     male: {
       type: Boolean,
@@ -44,10 +43,15 @@ const userSchema = new mongoose.Schema(
     },
     iconUrl: {
       type: String,
-      required: true,
+      default: '',
     },
     iconPublicId: {
       type: String,
+    },
+    role: {
+      type: String,
+      enum: ['USER', 'ADMIN'],
+      default: 'USER',
     },
   },
   {
