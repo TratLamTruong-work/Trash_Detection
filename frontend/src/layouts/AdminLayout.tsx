@@ -2,7 +2,6 @@ import { Outlet, Link, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
-  ShoppingCart,
   Users,
   LogOut,
   Gift,
@@ -25,18 +24,13 @@ export default function AdminLayout() {
   const menuItems = [
     {
       label: 'Dashboard',
-      href: '/admin',
+      href: '/admin/dashboard',
       icon: LayoutDashboard,
     },
     {
-      label: 'Mục học mặc định',
+      label: 'Quản lý vật phẩm',
       href: '/admin/default-items',
       icon: Package,
-    },
-    {
-      label: 'Mục học tùy chỉnh',
-      href: '/admin/custom-items',
-      icon: ShoppingCart,
     },
     {
       label: 'Lịch sử giao dịch',

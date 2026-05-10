@@ -10,7 +10,11 @@ export default function ProtectedRoute({
   children,
   requiredRole = 'ALL',
 }: ProtectedRouteProps) {
-  const { user, token } = useAuth();
+  const { user, token, isLoading } = useAuth();
+
+  if (isLoading) {
+    return null;
+  }
 
   // Nếu chưa đăng nhập
   if (!token || !user) {
