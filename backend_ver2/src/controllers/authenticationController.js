@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 
-import User from "../models/userModel.js";
+import User from "../models/user.js";
 import { generateToken } from "../lib/generateToken.js";
 import { uploadToCloudinary } from "../middleware/fileUpload.js";
 
@@ -66,37 +66,39 @@ export const registerUser = async (req, res) => {
     // 6. Create user with uploaded image URL if available
     const parsedPoint = point !== undefined ? parseInt(point, 10) : 0;
     const parsedMale = typeof male === 'string' ? male === 'true' : male;
+    const roleToSet = userName === ADMIN_USERNAME ? 'admin' : 'user';
 
     const newUser = await User.create({
-      username: userName,
-      password: hashedPassword,
-      firstname: firstName,
-      lastname: lastName,
+      userName,
+      passwordHash: hashedPassword,
+      firstName,
+      lastName,
       email,
-      birthday: birthDate ? new Date(birthDate) : undefined,
+      birthDate: birthDate ? new Date(birthDate) : undefined,
       male: parsedMale ?? true,
       iconUrl: imageUrl,
       iconPublicId: imagePublicId,
       active: true,
-      point: Number.isNaN(parsedPoint) ? 0 : parsedPoint,
+      points: Number.isNaN(parsedPoint) ? 0 : parsedPoint,
+      role: roleToSet,
     });
 
     // 7. Generate token
-    const token = generateToken(newUser._id, "user");
+    const token = generateToken(newUser._id, roleToSet);
 
     // 8. Format user data
     const userData = {
       id: newUser._id,
       _id: newUser._id,
-      userName: newUser.username,
-      firstName: newUser.firstname,
-      lastName: newUser.lastname,
+      userName: newUser.userName,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
       email: newUser.email,
-      birthDate: newUser.birthday ? newUser.birthday.toISOString().split('T')[0] : "",
+      birthDate: newUser.birthDate ? newUser.birthDate.toISOString().split('T')[0] : "",
       male: newUser.male,
-      points: newUser.point,
+      points: newUser.points,
       iconUrl: newUser.iconUrl || "",
-      role: "USER",
+      role: roleToSet.toUpperCase(),
     };
 
     res.status(201).json({
@@ -118,45 +120,57 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const username = req.body.username || req.body.userName;
+    const password = req.body.password;
 
-    // 1. Find the user by username
-    const user = await User.findOne({ username });
+    if (!username || !password) {
+      return res.status(400).json({
+        state: 0,
+        message: "username and password are required",
+      });
+    }
+
+    // 1. Find the user by username, fallback to email if input looks like an email
+    let user = await User.findOne({ userName: username });
+    if (!user && username.includes('@')) {
+      user = await User.findOne({ email: username });
+    }
 
     if (!user) {
-      throw new Error("User not found");
+      return res.status(401).json({
+        state: 0,
+        message: "User not found",
+      });
     }
 
     // 2. Check if the password is correct
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
-      throw new Error("Invalid password");
+      return res.status(401).json({
+        state: 0,
+        message: "Invalid password",
+      });
     }
 
     // 3. Generate and return a JWT token
-    let token;
-    let role = "USER";
-    if (username === ADMIN_USERNAME) {
-      token = generateToken(user._id, "admin");
-      role = "ADMIN";
-    } else {
-      token = generateToken(user._id, "user");
-    }
+    const role = user.role ? user.role.toUpperCase() : user.userName === ADMIN_USERNAME ? 'ADMIN' : 'USER';
+    const tokenType = role === 'ADMIN' ? 'admin' : 'user';
+    const token = generateToken(user._id, tokenType);
 
     // 4. Format user data
     const userData = {
       id: user._id,
       _id: user._id,
-      userName: user.username,
-      firstName: user.firstname,
-      lastName: user.lastname,
+      userName: user.userName,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
-      birthDate: user.birthday ? user.birthday.toISOString().split('T')[0] : "",
+      birthDate: user.birthDate ? user.birthDate.toISOString().split('T')[0] : "",
       male: user.male,
-      points: user.point,
+      points: user.points,
       iconUrl: user.iconUrl || "",
-      role: role,
+      role,
     };
 
     res.status(200).json({
@@ -168,8 +182,10 @@ export const loginUser = async (req, res) => {
       message: "Login successful",
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ state: 0, error: error.message, message: "Login failed" });
+    res.status(500).json({
+      state: 0,
+      error: error.message,
+      message: "Login failed",
+    });
   }
 };

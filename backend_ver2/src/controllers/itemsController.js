@@ -1,4 +1,4 @@
-import DefaultItem from "../models/defaultItemModel.js";
+import DefaultItem from "../models/defaultiItem.js";
 import {
   uploadToCloudinary,
   deleteFromCloudinary,
@@ -7,8 +7,8 @@ import { updateField } from "../lib/usersHelpers.js";
 
 export const getAllItems = async (req, res) => {
   try {
-    const items = await DefaultItem.find({}, "-imagePublicId").sort({
-      createdAt: -1,
+    const items = await DefaultItem.find().sort({
+      _id: -1,
     });
 
     const formattedItems = items.map((item) => ({
@@ -18,8 +18,6 @@ export const getAllItems = async (req, res) => {
       active: item.active,
       pointToTrade: item.pointToTrade,
       imageUrl: item.imageUrl,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
     }));
 
     res.status(200).json({
@@ -66,6 +64,7 @@ export const getItemById = async (req, res) => {
       active: item.active,
       pointToTrade: item.pointToTrade,
       imageUrl: item.imageUrl,
+      imagePublicId: item.imagePublicId,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     };
@@ -86,13 +85,13 @@ export const getItemById = async (req, res) => {
 
 export const createItem = async (req, res) => {
   try {
-    const { name, description, pointToTrade } = req.body;
+    const { name, description, pointToTrade, active } = req.body;
 
     // 1. Validate input data
-    if (!name || !description || !pointToTrade) {
+    if (!name) {
       return res.status(400).json({
         state: 0,
-        message: "Name, description, and pointToTrade are required",
+        message: "Name is required",
       });
     }
 
@@ -111,12 +110,11 @@ export const createItem = async (req, res) => {
     const newItem = await DefaultItem.create({
       name,
       description,
+      active: active !== undefined ? active === 'true' || active === true : undefined,
       pointToTrade,
       imageUrl,
       imagePublicId,
     });
-
-    await newItem.save();
 
     res.status(201).json({
       state: 1,
@@ -149,27 +147,28 @@ export const updateItem = async (req, res) => {
     }
 
     // 4. Update item fields if provided in the request body
-    const { name, description, pointToTrade } = req.body;
+    const { name, description, pointToTrade, active } = req.body;
 
     item.name = updateField(name, item.name);
     item.description = updateField(description, item.description);
 
-    if (pointToTrade !== undefined && pointToTrade !== null) {
+    if (pointToTrade !== undefined && pointToTrade !== null && pointToTrade !== '') {
       item.pointToTrade = pointToTrade;
+    }
+
+    if (active !== undefined) {
+      item.active = active === 'true' || active === true;
     }
 
     // 5. Handle file upload if a new image is provided
     if (req.files && req.files.image) {
       const imageFile = req.files.image;
 
-      // 5.1. Delete old image from Cloudinary if it exists
       if (item.imagePublicId) {
         await deleteFromCloudinary(item.imagePublicId);
       }
 
-      // 5.2. Upload new image
       const { imageUrl, imagePublicId } = await uploadToCloudinary(imageFile);
-
       item.imageUrl = imageUrl;
       item.imagePublicId = imagePublicId;
     }
@@ -205,13 +204,13 @@ export const deleteItem = async (req, res) => {
       });
     }
 
-    // 2. Delete the item from the database
-    await DefaultItem.deleteOne({ _id: id });
-
-    // 3. Delete image from Cloudinary if it exists
+    // 2. Delete image from Cloudinary if it exists
     if (item.imagePublicId) {
       await deleteFromCloudinary(item.imagePublicId);
     }
+
+    // 3. Delete the item from the database
+    await DefaultItem.deleteOne({ _id: id });
 
     res.status(200).json({
       state: 1,

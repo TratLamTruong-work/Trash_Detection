@@ -2,20 +2,20 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    username: {
+    userName: {
       type: String,
       required: true,
       unique: true,
     },
-    password: {
+    passwordHash: {
       type: String,
       required: true,
     },
-    firstname: {
+    firstName: {
       type: String,
       required: true,
     },
-    lastname: {
+    lastName: {
       type: String,
       required: true,
     },
@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    birthday: {
+    birthDate: {
       type: Date,
     },
     male: {
@@ -32,11 +32,7 @@ const userSchema = new mongoose.Schema(
       default: true,
       required: true,
     },
-    active: {
-      type: Boolean,
-      default: true,
-    },
-    point: {
+    points: {
       type: Number,
       default: 0,
       required: true,
@@ -50,8 +46,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['USER', 'ADMIN'],
-      default: 'USER',
+      enum: ['user', 'admin'],
+      default: 'user',
     },
   },
   {
