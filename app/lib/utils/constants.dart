@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ApiConfig {
-  static const String baseUrl = "http://127.0.0.1:5000/api";
+  static const String baseUrl = "http://127.0.0.1:3000/api";
   static const String authUrl = "$baseUrl/auth";
   static const String userUrl = "$baseUrl/user";
   static const String rewardsUrl = "$baseUrl/rewards";

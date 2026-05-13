@@ -3,9 +3,9 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-import TradeHistory from "../models/tradeHistoryModel.js";
-import User from "../models/userModel.js";
-import DefaultItem from "../models/defaultItemModel.js";
+import TradeHistory from "../models/tradeHistory.js";
+import User from "../models/user.js";
+import DefaultItem from "../models/defaultiItem.js";
 
 export const createTradeHistory = async (req, res) => {
   const session = await mongoose.startSession();
@@ -49,7 +49,7 @@ export const createTradeHistory = async (req, res) => {
     }
 
     // 3. Calculate points
-    const previousPoint = user.point;
+    const previousPoint = user.points;
     const totalCost = item.pointToTrade * quantity;
     const remainedPoint = previousPoint - totalCost;
 
@@ -62,8 +62,8 @@ export const createTradeHistory = async (req, res) => {
       });
     }
 
-    // 5. Update user point
-    user.point = remainedPoint;
+    // 5. Update user points
+    user.points = remainedPoint;
     await user.save({ session });
 
     // 6. Create trade history
@@ -103,7 +103,7 @@ export const createTradeHistory = async (req, res) => {
 export const getAllTradeHistories = async (req, res) => {
   try {
     const tradeHistories = await TradeHistory.find()
-      .populate("userId", "username email")
+      .populate("userId", "userName email")
       .populate("itemId", "name pointToTrade imageUrl")
       .sort({ createdAt: -1 });
 
@@ -112,7 +112,7 @@ export const getAllTradeHistories = async (req, res) => {
       user: trade.userId
         ? {
             _id: trade.userId._id,
-            username: trade.userId.username,
+            username: trade.userId.userName,
             email: trade.userId.email,
           }
         : null,
