@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: trash-detection-backend
+    env: node
+    plan: free
+    branch: Sang
+    root: backend_ver2
+    buildCommand: npm install
+    startCommand: npm start
+
+  - type: static
+    name: trash-detection-frontend
+    env: static
+    plan: free
+    branch: Sang
+    root: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
