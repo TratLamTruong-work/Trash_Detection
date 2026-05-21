@@ -33,7 +33,9 @@ export const authAPI = {
     formData.append('firstName', data.firstName);
     formData.append('lastName', data.lastName);
     formData.append('email', data.email);
-    formData.append('birthDate', data.birthDate);
+    if (data.birthDate) {
+      formData.append('birthDate', data.birthDate);
+    }
     formData.append('male', data.male.toString());
     if (data.points !== undefined) {
       formData.append('point', data.points.toString());
