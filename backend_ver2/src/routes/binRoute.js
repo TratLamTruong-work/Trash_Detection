@@ -1,5 +1,5 @@
 import express from "express";
-import { receiveDistance } from "../controllers/binController.js";
+import { receiveBinStatus } from "../controllers/binController.js";
 
 const router = express.Router();
 
