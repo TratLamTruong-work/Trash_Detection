@@ -42,6 +42,11 @@ export default function AdminLayout() {
       href: '/admin/users',
       icon: Users,
     },
+    {
+      label: 'Quản lý điểm',
+      href: '/admin/point-transactions',
+      icon: Gift,
+    },
   ];
 
   return (

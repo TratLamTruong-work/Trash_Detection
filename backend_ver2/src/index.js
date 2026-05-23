@@ -9,6 +9,8 @@ import authenticationRoute from "./routes/authenticationRoute.js";
 import usersRoute from "./routes/usersRoute.js";
 import itemsRoute from "./routes/itemsRoute.js";
 import tradeHistoryRoute from "./routes/tradeHistoryRoute.js";
+import pointTransactionRoute from "./routes/pointTransactionRoute.js";
+import distanceRoutes from "./routes/raspRoute.js";
 
 dotenv.config();
 
@@ -57,6 +59,7 @@ app.get("/", (req, res) => {
       users: "/api/users",
       items: "/api/items",
       tradeHistory: "/api/trade_history",
+      pointTransactions: "/api/point_transactions",
     },
   });
 });
@@ -66,6 +69,9 @@ app.use("/api/auth", authenticationRoute);
 app.use("/api/users", usersRoute);
 app.use("/api/items", itemsRoute);
 app.use("/api/trade_history", tradeHistoryRoute);
+app.use("/api/distance", distanceRoutes);
+// Point Transactions (admin)
+app.use("/api/point_transactions", pointTransactionRoute);
 
 // 404 Handler - Not Found
 app.use((req, res) => {
