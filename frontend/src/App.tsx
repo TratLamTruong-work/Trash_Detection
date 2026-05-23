@@ -8,6 +8,7 @@ import UserManagementPage from './pages/admin/UserManagementPage';
 import AdminLayout from './layouts/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+import PointTransactionPage from './pages/admin/PointTransactionPage';
 
 function App() {
   return (
@@ -30,6 +31,8 @@ function App() {
           <Route path="default-items" element={<DefaultItemsPage />} />
           <Route path="trade-history" element={<TradeHistoryPage />} />
           <Route path="users" element={<UserManagementPage />} />
+          <Route path="point-transaction" element={<PointTransactionPage />} />
+          <Route path="point-transactions" element={<PointTransactionPage />} />
         </Route>
 
         {/* Redirect root to login or admin based on auth status */}

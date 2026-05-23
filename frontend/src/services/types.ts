@@ -92,3 +92,28 @@ export interface TradeHistoryPayload {
   status?: string;
   notes?: string;
 }
+
+export interface PointTransaction {
+  _id: string;
+  userId: string | User;
+  qrCodeId?: string;
+  type: 'earn' | 'spend';
+  method: string;
+  points: number;
+  prevPoint: number;
+  currentPoint: number;
+  status: 'completed' | 'pending' | 'failed';
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface PointTransactionPayload {
+  userId: string;
+  qrCodeId?: string;
+  type: 'earn' | 'spend';
+  method: string;
+  points: number;
+  prevPoint: number;
+  currentPoint: number;
+  status?: 'completed' | 'pending' | 'failed';
+}
