@@ -7,7 +7,7 @@ import { Eye, Trash2 } from 'lucide-react';
 import type { PointTransaction, User } from '../../services/types';
 
 export default function PointTransactionPage() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [transactions, setTransactions] = useState<PointTransaction[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -16,6 +16,14 @@ export default function PointTransactionPage() {
   useEffect(() => {
     fetchData();
   }, [token]);
+
+  const getUserDisplayName = (userId: string | User) => {
+    if (typeof userId === 'object') {
+      return userId.userName;
+    }
+
+    return users.find((user) => user._id === userId)?.userName ?? userId;
+  };
 
   const fetchData = async () => {
     if (!token) return;
@@ -67,29 +75,26 @@ export default function PointTransactionPage() {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((tx) => {
-                const u = typeof tx.userId === 'object' ? tx.userId : users.find(u => u._id === tx.userId);
-                return (
-                  <tr key={tx._id} className="border-t">
-                    <td className="px-4 py-2">{u ? u.userName : tx.userId}</td>
-                    <td className="px-4 py-2">{tx.type}</td>
-                    <td className="px-4 py-2">{tx.method}</td>
-                    <td className="px-4 py-2">{tx.points}</td>
-                    <td className="px-4 py-2">{tx.prevPoint}</td>
-                    <td className="px-4 py-2">{tx.currentPoint}</td>
-                    <td className="px-4 py-2">{tx.status}</td>
-                    <td className="px-4 py-2">{new Date(tx.createdAt).toLocaleString()}</td>
-                    <td className="px-4 py-2 flex gap-2">
-                      <button onClick={() => setDetailView(tx)} className="text-blue-600 hover:underline" title="Xem chi tiết">
-                        <Eye size={18} />
-                      </button>
-                      <button onClick={() => handleDelete(tx._id)} className="text-red-600 hover:underline" title="Xóa">
-                        <Trash2 size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {transactions.map((tx) => (
+                <tr key={tx._id} className="border-t">
+                  <td className="px-4 py-2">{getUserDisplayName(tx.userId)}</td>
+                  <td className="px-4 py-2">{tx.type}</td>
+                  <td className="px-4 py-2">{tx.method}</td>
+                  <td className="px-4 py-2">{tx.points}</td>
+                  <td className="px-4 py-2">{tx.prevPoint}</td>
+                  <td className="px-4 py-2">{tx.currentPoint}</td>
+                  <td className="px-4 py-2">{tx.status}</td>
+                  <td className="px-4 py-2">{new Date(tx.createdAt).toLocaleString()}</td>
+                  <td className="px-4 py-2 flex gap-2">
+                    <button onClick={() => setDetailView(tx)} className="text-blue-600 hover:underline" title="Xem chi tiết">
+                      <Eye size={18} />
+                    </button>
+                    <button onClick={() => handleDelete(tx._id)} className="text-red-600 hover:underline" title="Xóa">
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -107,10 +112,7 @@ export default function PointTransactionPage() {
             </button>
             <h2 className="text-xl font-bold mb-4">Chi tiết Point Transaction</h2>
             <div className="space-y-2">
-              <div><b>Người dùng:</b> {(() => {
-                const u = typeof detailView.userId === 'object' ? detailView.userId : users.find(u => u._id === detailView.userId);
-                return u ? u.userName : detailView.userId;
-              })()}</div>
+              <div><b>Người dùng:</b> {getUserDisplayName(detailView.userId)}</div>
               <div><b>Loại:</b> {detailView.type}</div>
               <div><b>Phương thức:</b> {detailView.method}</div>
               <div><b>Điểm:</b> {detailView.points}</div>
