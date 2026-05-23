@@ -10,7 +10,7 @@ import usersRoute from "./routes/usersRoute.js";
 import itemsRoute from "./routes/itemsRoute.js";
 import tradeHistoryRoute from "./routes/tradeHistoryRoute.js";
 import pointTransactionRoute from "./routes/pointTransactionRoute.js";
-import distanceRoutes from "./routes/raspRoute.js";
+import distanceRoutes from "./routes/binRoute.js";
 
 dotenv.config();
 
