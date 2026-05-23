@@ -26,6 +26,16 @@ export interface DefaultItem {
   updatedAt?: string;
 }
 
+export interface TrashBinStatus {
+  _id: string;
+  binType: string;
+  currentFillPercent: number;
+  status: 'empty' | 'normal' | 'warning' | 'full';
+  lastUpdated: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface CustomItem extends DefaultItem {
   userId?: string;
   groupId?: string;

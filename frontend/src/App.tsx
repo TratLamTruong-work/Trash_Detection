@@ -9,6 +9,7 @@ import AdminLayout from './layouts/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import PointTransactionPage from './pages/admin/PointTransactionPage';
+import BinManagementPage from './pages/admin/BinManagementPage.tsx';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path="users" element={<UserManagementPage />} />
           <Route path="point-transaction" element={<PointTransactionPage />} />
           <Route path="point-transactions" element={<PointTransactionPage />} />
+          <Route path="bins" element={<BinManagementPage />} />
         </Route>
 
         {/* Redirect root to login or admin based on auth status */}

@@ -7,6 +7,7 @@ import {
   Gift,
   Menu,
   X,
+  Trash2,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
@@ -46,6 +47,11 @@ export default function AdminLayout() {
       label: 'Quản lý điểm',
       href: '/admin/point-transactions',
       icon: Gift,
+    },
+    {
+      label: 'Thùng rác',
+      href: '/admin/bins',
+      icon: Trash2,
     },
   ];
 
