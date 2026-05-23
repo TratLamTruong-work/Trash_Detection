@@ -62,3 +62,19 @@ export const receiveBinStatus = async (req, res) => {
     });
   }
 };
+
+export const getCurrentBins = async (req, res) => {
+  try {
+    const bins = await TrashBin.find();
+
+    return res.status(200).json({
+      success: true,
+      data: bins,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

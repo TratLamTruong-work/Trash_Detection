@@ -6,4 +6,6 @@ const router = express.Router();
 // POST /api/bin-status
 router.post("/", receiveBinStatus);
 
+router.get("/", getCurrentBins);
+
 export default router;
