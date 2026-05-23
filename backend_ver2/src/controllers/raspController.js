@@ -1,21 +1,29 @@
 export const receiveDistance = async (req, res) => {
   try {
-    const { distance } = req.body;
+    const { binType, fillPercent, timestamp } = req.body;
 
-    if (distance === undefined) {
+    if (
+      binType === undefined ||
+      fillPercent === undefined ||
+      timestamp === undefined
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Distance is required",
+        message: "Missing required fields",
       });
     }
 
-    console.log("Distance received:", distance);
+    console.log("Bin Type:", binType);
+    console.log("Fill Percent:", fillPercent);
+    console.log("Timestamp:", timestamp);
 
     return res.status(200).json({
       success: true,
-      message: "Distance received successfully",
+      message: "Data received successfully",
       data: {
-        distance,
+        binType,
+        fillPercent,
+        timestamp,
       },
     });
   } catch (error) {
