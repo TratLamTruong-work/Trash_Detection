@@ -5,7 +5,7 @@ const trashBinLogSchema = new mongoose.Schema(
     binType: {
       type: String,
       required: true,
-      enum: ["organic", "recyclable"],
+      enum: ["Organic", "Recyclable"],
     },
 
     fillPercent: {
